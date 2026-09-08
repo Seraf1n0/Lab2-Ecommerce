@@ -113,13 +113,7 @@ function App() {
 
                 <div className="flex justify-center pt-4">
                   <Pagination
-                    classNames={{
-                      list: "flex items-center gap-1",
-                      item: "rounded-md px-3 py-1 text-sm text-slate-600 hover:bg-indigo-100",
-                      selectedItem: "bg-indigo-600 text-white hover:bg-indigo-700",
-                      disabledItem: "opacity-40 pointer-events-none",
-                      link: "block",
-                    }}
+                    
                   />
                 </div>
               </main>
