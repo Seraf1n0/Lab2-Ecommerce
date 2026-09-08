@@ -1,6 +1,6 @@
 import { HashRouter } from 'react-router-dom';
 import { liteClient as algoliasearch } from "algoliasearch/lite";
-import { InstantSearch, SearchBox, Hits, HitsPerPage } from "react-instantsearch";
+import { InstantSearch, SearchBox, Hits, HitsPerPage, useInstantSearch } from "react-instantsearch";
 import CategoryFilter from './pages/search/components/CategoryFilter';
 import PriceRange from './pages/search/components/PriceRange';
 import BrandFilter from './pages/search/components/BrandFilter';
@@ -12,7 +12,7 @@ const searchClient = algoliasearch(
   import.meta.env.VITE_ALGOLIA_SEARCH_KEY
 );
 
-// Esto es para poder mostrar resultados
+
 function Hit({ hit }: { hit: Product }) {
   return (
     <article className="group flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-1 hover:shadow-lg">
@@ -35,6 +35,58 @@ function Hit({ hit }: { hit: Product }) {
         </p>
       </div>
     </article>
+  );
+}
+
+
+function NoResults() {
+  const { indexUiState, results } = useInstantSearch();
+
+  if (results.nbHits !== 0) return null;
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-white p-10 text-center shadow-sm ring-1 ring-slate-200">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-10 w-10 text-slate-300"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        />
+      </svg>
+      <p className="text-base font-semibold text-slate-700">
+        No se encontraron resultados
+      </p>
+      <p className="text-sm text-slate-500">
+        {indexUiState.query
+          ? <>No hay productos que coincidan con &quot;{indexUiState.query}&quot;.</>
+          : "Intenta ajustar los filtros o la búsqueda."}
+      </p>
+    </div>
+  );
+}
+
+
+function Results() {
+  const { results } = useInstantSearch();
+
+  if (results.nbHits === 0) {
+    return <NoResults />;
+  }
+
+  return (
+    <Hits
+      hitComponent={Hit}
+      classNames={{
+        list: "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3",
+      }}
+    />
   );
 }
 
@@ -82,7 +134,7 @@ function App() {
                   <h2 className="mb-2 text-sm font-semibold text-slate-700">Precio</h2>
                   <PriceRange />
                 </div>
-                
+
               </aside>
 
 
@@ -103,18 +155,10 @@ function App() {
                   />
                 </div>
 
-
-                <Hits
-                  hitComponent={Hit}
-                  classNames={{
-                    list: "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3",
-                  }}
-                />
+                <Results />
 
                 <div className="flex justify-center pt-4">
-                  <Pagination
-                    
-                  />
+                  <Pagination />
                 </div>
               </main>
             </div>
