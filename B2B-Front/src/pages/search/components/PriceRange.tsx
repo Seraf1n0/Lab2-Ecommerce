@@ -1,34 +1,54 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRange } from "react-instantsearch";
-import { RangeSlider as SpectrumRangeSlider } from "@adobe/react-spectrum";
-
-// …
 
 export default function PriceRange() {
-  const { start, range, canRefine, refine } = useRange({ attribute: "price"});
+  const { start, range, canRefine, refine } = useRange({ attribute: "price" });
   const min = (range.min as number) || 0;
   const max = (range.max as number) || 0;
-  const [value, setValue] = useState({
-    start: min,
-    end: max,
-  });
 
-  const from = Math.max(min, Number.isFinite(start[0] as number) ? (start[0] as number): min);
+  const from = Math.max(min, Number.isFinite(start[0] as number) ? (start[0] as number) : min);
   const to = Math.min(max, Number.isFinite(start[1] as number) ? (start[1] as number) : max);
+
+  const [value, setValue] = useState({ start: from, end: to });
 
   useEffect(() => {
     setValue({ start: from, end: to });
   }, [from, to]);
 
   return (
-    <SpectrumRangeSlider
-      label="Price range"
-      minValue={min}
-      maxValue={max}
-      value={value}
-      onChange={setValue}
-      onChangeEnd={({ start, end }) => refine([start, end])}
-      isDisabled={!canRefine}
-    />
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-between text-xs text-slate-500">
+        <span>${value.start}</span>
+        <span>${value.end}</span>
+      </div>
+
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value.start}
+        disabled={!canRefine}
+        onChange={(e) =>
+          setValue((v) => ({ ...v, start: Math.min(Number(e.target.value), v.end) }))
+        }
+        onMouseUp={() => refine([value.start, value.end])}
+        onTouchEnd={() => refine([value.start, value.end])}
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-indigo-600 disabled:opacity-40"
+      />
+
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value.end}
+        disabled={!canRefine}
+        onChange={(e) =>
+          setValue((v) => ({ ...v, end: Math.max(Number(e.target.value), v.start) }))
+        }
+        onMouseUp={() => refine([value.start, value.end])}
+        onTouchEnd={() => refine([value.start, value.end])}
+        className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-indigo-600 disabled:opacity-40"
+      />
+    </div>
   );
 }
